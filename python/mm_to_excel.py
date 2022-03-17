@@ -86,7 +86,7 @@ for test_main_module in top_node:
             addNewNode()
         print("-----> " + test_model_str)
         for test_content in test_module:
-            test_content_str = test_content.get("TEXT")[3:]
+            test_content_str = test_content.gete"TEXT")[3:]
             # 如果这一行保存了，请检查 tc:xxx 的末尾是不是粗体
             if len(test_content) == 0:
                 addNewNode()
