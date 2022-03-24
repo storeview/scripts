@@ -78,7 +78,7 @@ def printFAIL():
     print("")
 
 def analyzeXmlFile(path, xml_file, files):
-    print(upgrade_file_path)
+    #print(upgrade_file_path)
     #print(path)
     ''' 解析 xml 文件'''
     tree = ET.parse(path + "\\" + xml_file)
@@ -117,8 +117,12 @@ def do_something(path):
             xml_files.append(file)
 
 
+
+    if len(xml_files) == 0:
+        return
+    
     printDivider()
-    print("当前目录中（" + path +"）")
+    print("目录：\n" + path)
     print("存在 " + str(len(xml_files)) + " 个 xml 文件，分别是：")
     for xml_file in xml_files:
         print(xml_file)
@@ -129,7 +133,7 @@ def do_something(path):
         #print(path)
         analyzeXmlFile(path, xml_file, files)
 
-    printDivider()
+    #printDivider()
 
 
 # 遍历该目录
@@ -145,6 +149,6 @@ def iterDir(path):
 
 # 1 给定一个目录
 upgrade_file_path = input("请将升级包文件夹拖入到窗口中：\n")
-upgrade_file_path = "D:\\3-Data\\Desktop\\JVT_WORK\\[√]\\2022-3-15"
+#upgrade_file_path = "D:\\3-Data\\Desktop\\JVT_WORK\\[√]\\2022-3-15"
 
 iterDir(upgrade_file_path)
