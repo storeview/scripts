@@ -22,8 +22,8 @@ for /f "tokens=1,2 delims= " %%a in ('arp -a') do (
 					set /a index+=1
 					arp -a | findstr %%j 
 					arp -a | findstr %%j >> D://IP_MAC.txt
-					echo ; >> D://IP_MAC.txt
-					echo ;
+					echo;>>D://IP_MAC.txt
+					echo;
 				)
 			)
 		)
@@ -31,4 +31,3 @@ for /f "tokens=1,2 delims= " %%a in ('arp -a') do (
 )
 
 notepad  D://IP_MAC.txt
-pause
