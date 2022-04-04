@@ -16,7 +16,7 @@ goto comments
 	算法复杂度：
 		时间复杂度：O(N*N)
 		空间复杂度：O(1)
-comments:
+:comments
 
 
 @echo off
