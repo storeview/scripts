@@ -1,3 +1,17 @@
+goto comments
+	检测重复 MAC 地址
+	版本：v1.0
+	编码说明：
+		1.循环两次，将 mac 地址相同，但是 ip 地址不同的『重复 mac』挑选出来。
+		2.找到该 mac 地址之后，不急着将该『重复 mac』放置在 duplicate_mac_list 中，而是在 duplicate_mac_list 中查看是否已存在
+		3. 如果 duplicate_mac_list 中不存在当前重复的 mac，则将该 mac 存储到列表中
+
+	复杂度：
+		时间复杂度：O(N*N)
+		空间复杂度：O(1)
+comments:
+
+
 @echo off
 setlocal enabledelayedexpansion
 set /a index=0
