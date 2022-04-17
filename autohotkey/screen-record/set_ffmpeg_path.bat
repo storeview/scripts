@@ -1,0 +1,1 @@
+setx Path "%Path%;%CD%/lib"
