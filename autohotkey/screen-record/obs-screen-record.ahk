@@ -39,9 +39,6 @@ class AllKeyBinder{
 MyFunc(code, name, state){
 	;Tooltip % "Key Code: " code ", Name: " name ", State: " state
 	global pc_active
-	global time
-	
-	 GuiControl, , time, On
 	
 	if (pc_active = 0){
         pc_active := 1
@@ -99,8 +96,13 @@ obsProgrameHwnd := 0
 
 
 ;--------------------> timer  <--------------------
-SetTimer, SET_pc_active_AS_0, 60000   
+SetTimer, SET_pc_active_AS_0, 300000   
 SetTimer, CHECK_obs_online, 30000
+
+;设置pc不活动的线程5分钟设置一次，间隔3分钟后，设置检查pc活动与否的线程
+; 这样两个线程Timer之间，就有固定的间隔时间，让用户操作，使 pc_active 变为 1
+; Sleep, 180000
+
 SetTimer, CHECK_pc_active, % (on:=!on) ? (300000) : ("off")
 
 ;SetTimer, SET_pc_active_AS_0, 8000   
@@ -113,32 +115,28 @@ Return
 
 CHECK_pc_active:
     if (obs_is_recording = 0) {
-        GuiControl, , time, Op
     } else {
+        ; 不管当前电脑是否有人在用，都需要对录像进行计时
+        online_count++
         if (pc_active = 1){
-            online_count++
-            if (obs_is_recording = 1) {
-                GuiControl, , time, On
-            }
-           
+            GuiControl, , time, On
+           ; 如果 24 次都是在线，说明程序已经运行了两个小时，是时候结束了
             if (online_count = 24){
                 stopRecording()
                 Sleep, 1000
                 startRecording()
                 online_count := 0
             }
+            ; 重新计时
             offline_count := 0
-        } 
-        if (pc_active = 0){
+        } else {
             offline_count++
-            if (obs_is_recording = 1) {
-                GuiControl, , time, F%offline_count%
-            }
+            GuiControl, , time, F%offline_count%
             if (offline_count = 6){
                 stopRecording()
                 offline_count := 0
+                online_count := 0
             }
-            online_count := 0
         }
     }
 
@@ -153,7 +151,6 @@ CHECK_obs_online:
 ;            f_id := WinExist(ahk_id  obsProgrameHwnd)
 ;            Tooltip, %f_id%
 ;            if (f_id = "0x0") {
-;            GuiControl, , time, Op
 ;            obs_is_recording := 0
 ;        }
 ;        }
@@ -178,18 +175,21 @@ startRecording(){
             Run obs64.exe,%A_ScriptDir%\obs\bin\64bit\, ,_obsProgramPid
             WinWait, ahk_pid %_obsProgramPid%,,5
             WinGet, obsProgrameHwnd, ID, ahk_pid %_obsProgramPid%
-            GuiControl, , time, On
         } else {
             toShow()
         }
         
         Sleep, 500
-        SetKeyDelay, 30, 50
+        SetKeyDelay, -1, 50
         ControlSend,, ^!y, ahk_pid %_obsProgramPid%
+        
         obs_is_recording := 1
+        
         Sleep, 1000
         
         toHide()
+
+        GuiControl, , time, On
     }
 
 }
@@ -198,10 +198,11 @@ startRecording(){
 stopRecording(){
     global obs_is_recording
     global _obsProgramPid
+    global time
     
     toShow()
 
-    SetKeyDelay, 30, 50
+    SetKeyDelay, -1, 50
     ControlSend,, ^!u, ahk_pid %_obsProgramPid%
     
     toHide()
