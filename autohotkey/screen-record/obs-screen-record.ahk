@@ -39,11 +39,18 @@ class AllKeyBinder{
 MyFunc(code, name, state){
 	;Tooltip % "Key Code: " code ", Name: " name ", State: " state
 	global pc_active
+    global pc_active
 	
-	if (pc_active = 0){
+    ; 如果正在录屏的话，有按键操作，就直接把 pc_active 变成 1
+	if (obs_is_recording = 1){
         pc_active := 1
-        startRecording()
-	}
+	} else {
+        ; 如果没有在录屏的话，则将 pc_active 置为 1，并启动录屏
+        if(pc_active = 0){
+            pc_active := 1
+            startRecording()
+        }
+    }
 }
 
 
@@ -101,7 +108,7 @@ SetTimer, CHECK_obs_online, 30000
 
 ;设置pc不活动的线程5分钟设置一次，间隔3分钟后，设置检查pc活动与否的线程
 ; 这样两个线程Timer之间，就有固定的间隔时间，让用户操作，使 pc_active 变为 1
-; Sleep, 180000
+Sleep, 180000
 
 SetTimer, CHECK_pc_active, % (on:=!on) ? (300000) : ("off")
 
@@ -151,7 +158,6 @@ CHECK_obs_online:
 ;            f_id := WinExist(ahk_id  obsProgrameHwnd)
 ;            Tooltip, %f_id%
 ;            if (f_id = "0x0") {
-;            obs_is_recording := 0
 ;        }
 ;        }
     }
@@ -170,6 +176,8 @@ startRecording(){
     global time
     
     if (obs_is_recording = 0){
+
+
         ; 如果当前没有启动录像程序，则启动录像程序
         if (_obsProgramPid = 0){
             Run obs64.exe,%A_ScriptDir%\obs\bin\64bit\, ,_obsProgramPid
@@ -183,13 +191,15 @@ startRecording(){
         SetKeyDelay, -1, 50
         ControlSend,, ^!y, ahk_pid %_obsProgramPid%
         
-        obs_is_recording := 1
         
         Sleep, 1000
         
         toHide()
 
         GuiControl, , time, On
+
+
+        obs_is_recording := 1
     }
 
 }
@@ -206,6 +216,9 @@ stopRecording(){
     ControlSend,, ^!u, ahk_pid %_obsProgramPid%
     
     toHide()
+
+
+
     obs_is_recording := 0
 }
 
