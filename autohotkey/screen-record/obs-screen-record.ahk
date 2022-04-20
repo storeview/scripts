@@ -68,7 +68,7 @@ y = 800
 Gui, Font, s%k_FontSize% %k_FontStyle%, %k_FontName%
 Gui, -Caption +ToolWindow
 Gui, Color, %TransColor%
-Gui Add, Button, Default w60 vtime, Op
+Gui Add, Button, Default w60 vtime, Opp
 Gui, Show
 WinGet, k_ID, ID, A
 WinMove, A,, x, y
@@ -126,9 +126,9 @@ CHECK_pc_active:
         ; 不管当前电脑是否有人在用，都需要对录像进行计时
         online_count++
         if (pc_active = 1){
-            GuiControl, , time, On
+            GuiControl, , time, O%online_count%
            ; 如果 24 次都是在线，说明程序已经运行了两个小时，是时候结束了
-            if (online_count = 24){
+            if (online_count >= 24){
                 stopRecording()
                 Sleep, 1000
                 startRecording()
@@ -139,7 +139,7 @@ CHECK_pc_active:
         } else {
             offline_count++
             GuiControl, , time, F%offline_count%
-            if (offline_count = 6){
+            if (offline_count >= 6){
                 stopRecording()
                 offline_count := 0
                 online_count := 0
@@ -152,7 +152,7 @@ Return
 CHECK_obs_online:
 ;    Tooltip, %obs_is_recording%
     if(obs_is_recording = 0){
-            GuiControl, , time, Op
+            GuiControl, , time, Opp
     } else {
 ;        if (obsProgrameHwnd != 0){
 ;            f_id := WinExist(ahk_id  obsProgrameHwnd)
@@ -187,7 +187,7 @@ startRecording(){
             toShow()
         }
         
-        Sleep, 500
+        Sleep, 1000
         SetKeyDelay, -1, 50
         ControlSend,, ^!y, ahk_pid %_obsProgramPid%
         
