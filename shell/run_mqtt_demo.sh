@@ -17,6 +17,7 @@ device_uuid=
 user_uuid=$(who am i | awk '{print $1$5}')
 # 配置储存地址
 config_path='.mqtt_demo_run_config'
+if [ -n "${config_path}" ]; then mkdir "${config_path}"; fi
 # 配置文件地址
 config_file="${config_path}/${user_uuid}.config"
 
@@ -61,7 +62,7 @@ function ShowUI(){
     read_input_text=$5
     controller_name=$6
     
-    #clear
+    clear
     echo -e "\n\n"
 	echo -e "\t\t\t\t\t\t\t当前用户 ${yellow_color}${user_uuid}${default_color}"
     echo -e "-------------------------------------------------------------------------------------"
