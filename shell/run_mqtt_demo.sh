@@ -3,6 +3,7 @@
 red_color="\e[31m"
 green_color="\e[32m"
 default_color="\e[0m"
+yellow_color="\e[33m"
 #
 #
 # --------------------> 变量  <--------------------
@@ -34,8 +35,16 @@ uniq_test_case_content_file="${config_path}/${user_uuid}--uniq_test_case_content
 # 中转文件
 temp_file="${config_path}/${user_uuid}-temp"
 #
+pre_controller=
+pre_input=
 
 
+
+cur_level=1
+declare -A nav_controller_name
+nav_controller_name=([1]='' [2]='' [3]='' [4]='' [5]='')
+declare -A nav_input
+nav_input=([1]='' [2]='' [3]='' [4]='' [5]='')
 # --------------------> 用户界面  <--------------------
 
 # showUI 展示用户界面
@@ -46,7 +55,7 @@ temp_file="${config_path}/${user_uuid}-temp"
 # 第五个参数：展示视图所使用的函数名称
 function ShowUI(){
     title=$1
-	sub_title=$2
+	bottom_title=$2
     top_text=$3
     center_text=$4
     read_input_text=$5
@@ -54,18 +63,28 @@ function ShowUI(){
     
     #clear
     echo -e "\n\n"
-    echo -e "--------------------------------------------------------------------------------"
+	echo -e "\t\t\t\t\t\t\t当前用户 ${yellow_color}${user_uuid}${default_color}"
+    echo -e "-------------------------------------------------------------------------------------"
     echo -e "${red_color} ${title} ${default_color}"
-    echo -e "--------------------------------------------------------------------------------"
-	echo -e "\t\t${sub_title}"
-     echo -e "--------------------------------------------------------------------------------"
-   echo -e ${top_text}
-    echo -e "\n\n"
-    
-    echo -e ${center_text}
-    echo -e "\n"
+    echo -e "-------------------------------------------------------------------------------------"
+    echo -e "${bottom_title}"
 
+
+    echo -e "\n\n\n\n"
+    echo -e ${center_text}
+    echo -e "\n\n\n\n"
+
+
+	   echo -e ${top_text}
+	        echo -e "-------------------------------------------------------------------------------------"
+
+
+    
+	echo -e "\n\n"
     read  -p "${read_input_text}" input 
+
+
+
 
     # 回调函数，用于处理用户的输入
     Callback "${controller_name}" "${input}"
@@ -86,23 +105,23 @@ cur_case_num=
 function ChangeMqttServerIP(){
     getMqttServerIP ${config_path}
     title='确定 MQTT 服务器地址'
-	sub_title=''
-    top_text="『退出（Esc)』\t\t『下一步（Enter）』"
+	bottom_title=" "
+    top_text="『退出（Q)』\t\t『下一步（Enter）』"
     center_text="当前 MQTT 服务器地址为：${mqtt_server_ip}" 
     read_input_text="修改请输入新的IP（不修改，请敲击回车）："
-    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeMqttServerIP'
+    ShowUI "${title}" "${bottom_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ChangeMqttServerIP'
 }
 #
 #
 # 改变设备 UUID
 function ChangeDeviceUUID(){
     getUUID ${config_path}
-	sub_title=''
+	bottom_title=" "
     title="确定设备 uuid "
-    top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
+    top_text="『退出（Q)』\t\t『下一步（Enter）』\t\t『上一步（R）』"
     center_text="当前设备 uuid 为：${green_color}${device_uuid}${default_color}"
     read_input_text="修改请输入新的uuid（不修改，请敲击回车）："
-    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeDeviceUUID'
+    ShowUI "${title}" "${bottom_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeDeviceUUID'
 }
 #
 #
@@ -111,8 +130,8 @@ function ShowAllTestCase(){
     # 独特的测试用例
     CollectUniqTestCase
     title="显示所有 case "
-	sub_title=''
-    top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
+	bottom_title=" "
+    top_text="『退出（Q)』\t\t『下一步（Enter）』\t\t『上一步（R）』"
     
 
     center_text=""
@@ -133,12 +152,14 @@ function ShowAllTestCase(){
 
 
     read_input_text="选择 case："
-    ShowUI "${title}" "${sub_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestCase'
+    ShowUI "${title}" "${bottom_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestCase'
 }
 #
 #
 #
 # 显示该条目下的所有测试内容
+father_test_case_num=
+father_test_case=
 function ShowAllTestContent(){
 	echo $1 >> log
 	father_test_case_num=$1
@@ -162,8 +183,8 @@ function ShowAllTestContent(){
 
 
     title="显示测试内容 "
-    top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
-	sub_title="${father_test_case_num} ${father_test_case}"
+    top_text="『退出（Q)』\t\t『下一步（Enter）』\t\t『上一步（R）』"
+	bottom_title="> ${father_test_case_num} ${father_test_case}"
     
     center_text=""
 	count=1
@@ -177,7 +198,7 @@ function ShowAllTestContent(){
 
 
     read_input_text="选择测试内容："
-    ShowUI "${title}" "${sub_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestContent'
+    ShowUI "${title}" "${bottom_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestContent'
 }
 
 
@@ -189,7 +210,7 @@ params=([type]='' [photoType]='' [start]='' [end]='' [PersonId]='')
 function ShowOneTestContent(){
 	input=$1
     title="具体接口 "
-    top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
+    top_text="『退出（Q)』\t\t『下一步（Enter）』\t\t『上一步（R）』"
 
 
 	# 获取到一个测试用例对象
@@ -214,13 +235,12 @@ function ShowOneTestContent(){
 	param=${param}"\t$key: ${params[$key]}\n"
 	done
 
-
-    sub_title="${case_num} ${case_content}"
+    bottom_title="> ${father_test_case_num} ${father_test_case} >> ${case_num} ${case_content}"
     center_text="${step}${expect}${param}"
 
 
     read_input_text="执行测试  "
-    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowOneTestContent'
+    ShowUI "${title}" "${bottom_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowOneTestContent'
 }
 
 
@@ -229,6 +249,8 @@ function ShowOneTestContent(){
 function Callback(){
     controller_name=$1
     input=$2
+
+
 
 
 #    # 如果参数为空
@@ -247,13 +269,29 @@ function Callback(){
 #            ;;
 #    esac
 #
+		    case "${input}" in
+			    "q"|"Q")
+				exit 0
+		    return
+		    ;;
+			    "r"|"R")
 
+				cur_level=$(( cur_level - 1 ))
+				echo "----> ${nav_controller_name["${cur_level}"]}  ${nav_input["${cur_level}"]}"
+				ReloadViewUI "${nav_controller_name["${cur_level}"]}" "${nav_input["${cur_level}"]}"
+				# 回退完成以后 cur_level 需要自减
+		    return
+		    ;;
+			*)
+			echo 5error
+		    esac
 
 
 
     # 设置参数专用
 
     
+
 
     # 设置变量的值
     case "${controller_name}" in
@@ -302,7 +340,6 @@ function Callback(){
             echo "2error" 
     esac
 
-    # 设置完成数值之后，依然需要跳转视图
 }
 
 #
@@ -310,7 +347,17 @@ function Callback(){
 function JumpViewUI(){
 	controller_name=$1
 	input=$2
-	#echo ${controller_name} >> log
+
+    # 未跳转页面之前的 controller 和 input
+	nav_controller_name["${cur_level}"]=$1
+	nav_input["${cur_level}"]=$2
+
+	echo "--111--> ${nav_controller_name["${cur_level}"]}   ${nav_input["${cur_level}"]}"
+	# 跳转完成以后 cur_level 需要自增
+	cur_level=$(( cur_level + 1 ))
+
+
+	echo ${controller_name} 
 	case "${controller_name}" in 
 		"ChangeMqttServerIP")
 			ChangeDeviceUUID "${input}"
@@ -330,6 +377,10 @@ function JumpViewUI(){
 		*)
 			echo "1error"
 	esac
+
+
+
+	
 }
 
 
