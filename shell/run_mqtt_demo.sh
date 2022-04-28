@@ -46,17 +46,20 @@ temp_file="${config_path}/${user_uuid}-temp"
 # 第五个参数：展示视图所使用的函数名称
 function ShowUI(){
     title=$1
-    top_text=$2
-    center_text=$3
-    read_input_text=$4
-    controller_name=$5
+	sub_title=$2
+    top_text=$3
+    center_text=$4
+    read_input_text=$5
+    controller_name=$6
     
     #clear
     echo -e "\n\n"
     echo -e "--------------------------------------------------------------------------------"
     echo -e "${red_color} ${title} ${default_color}"
     echo -e "--------------------------------------------------------------------------------"
-    echo -e ${top_text}
+	echo -e "\t\t${sub_title}"
+     echo -e "--------------------------------------------------------------------------------"
+   echo -e ${top_text}
     echo -e "\n\n"
     
     echo -e ${center_text}
@@ -74,26 +77,32 @@ function ShowUI(){
 
 
 ## --------------------> 控制层  <--------------------
+
+cur_case_num=
+
+
 #
 # 改变 MQTT 服务器的地址
 function ChangeMqttServerIP(){
     getMqttServerIP ${config_path}
     title='确定 MQTT 服务器地址'
+	sub_title=''
     top_text="『退出（Esc)』\t\t『下一步（Enter）』"
     center_text="当前 MQTT 服务器地址为：${mqtt_server_ip}" 
     read_input_text="修改请输入新的IP（不修改，请敲击回车）："
-    ShowUI "${title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeMqttServerIP'
+    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeMqttServerIP'
 }
 #
 #
 # 改变设备 UUID
 function ChangeDeviceUUID(){
     getUUID ${config_path}
+	sub_title=''
     title="确定设备 uuid "
     top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
     center_text="当前设备 uuid 为：${green_color}${device_uuid}${default_color}"
     read_input_text="修改请输入新的uuid（不修改，请敲击回车）："
-    ShowUI "${title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeDeviceUUID'
+    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ChangeDeviceUUID'
 }
 #
 #
@@ -102,6 +111,7 @@ function ShowAllTestCase(){
     # 独特的测试用例
     CollectUniqTestCase
     title="显示所有 case "
+	sub_title=''
     top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
     
 
@@ -123,7 +133,7 @@ function ShowAllTestCase(){
 
 
     read_input_text="选择 case："
-    ShowUI "${title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestCase'
+    ShowUI "${title}" "${sub_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestCase'
 }
 #
 #
@@ -133,6 +143,8 @@ function ShowAllTestContent(){
 	echo $1 >> log
 	father_test_case_num=$1
 	echo ---$1 > log
+
+	cur_case_num=${father_test_case_num}
 	
 	for test_case in ${test_case_list}; do
 		ret=$(echo ${test_case} | grep "${father_test_case_num}#" | awk -F'#' '{print $2}')
@@ -151,7 +163,7 @@ function ShowAllTestContent(){
 
     title="显示测试内容 "
     top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
-
+	sub_title="${father_test_case_num} ${father_test_case}"
     
     center_text=""
 	count=1
@@ -165,11 +177,13 @@ function ShowAllTestContent(){
 
 
     read_input_text="选择测试内容："
-    ShowUI "${title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestContent'
+    ShowUI "${title}" "${sub_title}"  "${top_text}" "${center_text}" "${read_input_text}" 'ShowAllTestContent'
 }
 
 
 
+declare -A params
+params=([type]='' [photoType]='' [start]='' [end]='' [PersonId]='')
 
 # 查询一个记录
 function ShowOneTestContent(){
@@ -188,14 +202,25 @@ function ShowOneTestContent(){
 
     step="[操作步骤]\n\t"$(echo $one | awk -F',' '{print $5}')"\n"
     expect="[预期结果]\n\t"$(echo $one | awk -F',' '{print $6}')"\n"
-	# param="[参数列表]\n\t"
+	param="[参数列表]\n"
+	params['type']=$(echo $one | awk -F',' '{print $7}')
+	params['photoType']=$(echo $one | awk -F',' '{print $8}')
+	params['start']=$(echo $one | awk -F',' '{print $9}')
+	params['end']=$(echo $one | awk -F',' '{print $10}')
+	params['PersonId']=$(echo $one | awk -F',' '{printf "%s", $11}')
+
+    for key in ${!params[*]}
+	do
+	param=${param}"\t$key: ${params[$key]}\n"
+	done
 
 
-    center_text="${step}${expect}"
+    sub_title="${case_num} ${case_content}"
+    center_text="${step}${expect}${param}"
 
 
     read_input_text="执行测试  "
-    ShowUI "${title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowOneTestContent'
+    ShowUI "${title}" "${sub_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowOneTestContent'
 }
 
 
@@ -270,6 +295,9 @@ function Callback(){
 		    esac
 		    JumpViewUI "${controller_name}" "${input}"
 	    ;;
+		"ShowOneTestContent")
+		    JumpViewUI "${controller_name}" "${input}"
+	    ;;
         *)
             echo "2error" 
     esac
@@ -295,6 +323,9 @@ function JumpViewUI(){
 			;;
 		"ShowAllTestContent")
 			ShowOneTestContent "${input}"
+			;;
+		"ShowOneTestContent")
+			ExecuteTest 
 			;;
 		*)
 			echo "1error"
@@ -421,6 +452,128 @@ function CollectUniqTestCaseContent(){
 
 	test_case_content_list=$(cat ${uniq_test_case_content_file})
 }
+
+
+mqtt_demo_path='/home/test/000/mqtt/bin/x64'
+
+
+# 执行测试
+function ExecuteTest(){
+
+	# echo ${params}
+
+	for key in ${!params[*]}
+	do
+	    value=${params[$key]}
+		# echo "${#key} __ ${#value}"
+		if [ ${#value} -ge 1 ]; then
+			# echo "---------- $key $value"
+			ChangeConfig "${key}" "${value}"
+		fi
+	done
+
+	ChangeConfig "mqtt_ip" "${mqtt_server_ip}"
+	ChangeConfig "device_uuid" "${device_uuid}"
+
+
+
+	$(cd ${mqtt_demo_path}; make clean; make;)
+
+
+	开始运行程序
+
+	cur_dir=${PWD}
+
+	cd ${mqtt_demo_path};
+
+
+	./demo_x64 ${cur_case_num}
+
+	cd ${cur_dir}
+
+    echo -e "执行程序： demo_x64 ${cur_case_num}"
+
+}
+
+
+
+
+# 修改 main.cpp 中的参数
+function ChangeConfig(){
+    key=$1
+	value=$2
+    pattern=
+    target=
+    line=
+	case "$key" in
+		"mqtt_ip")
+		pattern='char \*host = \(char \*\)\"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\";'
+		target='char \*host = \(char \*\)\"'${value//\./\\.}'\";'
+		;;
+		"device_uuid")
+		pattern='sprintf\(g_uuid,\"%s\",\"[^\"]+\"\);'
+		target='sprintf\(g_uuid,\"%s\",\"'${value}'\"\);'
+		;;
+		"type")
+		pattern='int type = [0-9]'
+		target='int type = '${value}
+		line='4000,4500'
+		;;
+		"photoType")
+		pattern='int photoType = [0-9]'
+		target='int photoType = '${value}
+		line='4250,4750'
+		;;
+		"start")
+		pattern='int start = [0-9]+'
+		target='int start = '${value}
+		line='4000,4600'
+		;;
+		"end")
+		pattern=',end = [0-9]+'
+		target=',end = '${value}
+		line='4000,4600'
+		;;
+		"PersonId")
+		pattern='root, \"PersonId\", \"[^\"]+\"'
+		target='root, \"PersonId\", \"'${value}'\"'
+		line='3250,3750'
+		;;
+		*)
+		 echo "4error"
+	esac
+
+    
+	echo ----------------------------
+	echo $line
+	echo $pattern
+	echo $target
+	echo ----------------------------
+
+
+	sed -i -r "${line}s/${pattern}/${target}/g" ${mqtt_demo_path}/main.cpp
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## --------------------> 函数入口  <--------------------
