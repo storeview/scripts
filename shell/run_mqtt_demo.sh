@@ -210,7 +210,7 @@ params=([type]='' [photoType]='' [start]='' [end]='' [PersonId]='')
 function ShowOneTestContent(){
 	input=$1
     title="具体接口 "
-    top_text="『退出（Q)』\t\t『下一步（Enter）』\t\t『上一步（R）』"
+    top_text="『退出（Q)』\t\t『执 行（Enter）』\t\t『上一步（R）』"
 
 
 	# 获取到一个测试用例对象
@@ -239,7 +239,7 @@ function ShowOneTestContent(){
     center_text="${step}${expect}${param}"
 
 
-    read_input_text="执行测试  "
+    read_input_text="是否开始执行（输入 R 回退）："
     ShowUI "${title}" "${bottom_title}" "${top_text}" "${center_text}" "${read_input_text}" 'ShowOneTestContent'
 }
 
