@@ -13,7 +13,7 @@ mqtt_server_ip=
 device_uuid=
 
 # 用户唯一标识，用于储存用户配置文件
-user_uuid=$(who | awk '{print $1$5}')
+user_uuid=$(who am i | awk '{print $1$5}')
 # 配置储存地址
 config_path='.mqtt_demo_run_config'
 # 配置文件地址
@@ -33,7 +33,7 @@ uniq_test_case_file="${config_path}/${user_uuid}--uniq_test_case.bak"
 uniq_test_case_content_file="${config_path}/${user_uuid}--uniq_test_case_content.bak"
 # 中转文件
 temp_file="${config_path}/${user_uuid}-temp"
-
+#
 
 
 # --------------------> 用户界面  <--------------------
@@ -51,7 +51,7 @@ function ShowUI(){
     read_input_text=$4
     controller_name=$5
     
-    clear
+    #clear
     echo -e "\n\n"
     echo -e "--------------------------------------------------------------------------------"
     echo -e "${red_color} ${title} ${default_color}"
@@ -111,7 +111,7 @@ function ShowAllTestCase(){
     do
 	    case_num=$(echo $c | awk -F'#' '{print $1}')
 	    case_name=$(echo $c | awk -F'#' '{print $2}')
-	    center_text="${center_text}${case_num} ${case_name}\t\t"
+	    center_text="${center_text}[${case_num}] ${case_name}\t\t"
 	    count=$(( count + 1 ))
 	    if [ ${count} -eq 3 ]; then
 		    center_text="${center_text}\n"
@@ -154,10 +154,13 @@ function ShowAllTestContent(){
 
     
     center_text=""
+	count=1
     for c in ${test_case_content_list}; do
 	    case_num=$(echo $c | awk -F'#' '{print $1}')
 	    case_content=$(echo $c | awk -F'#' '{print $2}')
-	    center_text="${center_text}${case_num}\t\t${case_content}\n"
+		line="[${count}]\t${case_content}"
+	    center_text="${center_text}${line}\n"
+		count=$(( count + 1 ))
     done
 
 
@@ -167,14 +170,28 @@ function ShowAllTestContent(){
 
 
 
+
 # 查询一个记录
 function ShowOneTestContent(){
 	input=$1
     title="具体接口 "
     top_text="『退出（Esc)』\t\t『下一步（Enter）』\t\t『上一步（Tab）』"
 
-    
-    center_text="${input}"
+
+	# 获取到一个测试用例对象
+    test_case_content_listArr=(${test_case_content_list})
+	case_num=$(echo ${test_case_content_listArr[(( input - 1))]} | awk -F'#' '{print $1}')
+	case_content=$(echo ${test_case_content_listArr[(( input - 1))]} | awk -F'#' '{print $2}')
+    one=$(cat ${csv_data_file} | tail +3 | grep "${case_num},")
+
+    # 对其进行解析
+
+    step="[操作步骤]\n\t"$(echo $one | awk -F',' '{print $5}')"\n"
+    expect="[预期结果]\n\t"$(echo $one | awk -F',' '{print $6}')"\n"
+	# param="[参数列表]\n\t"
+
+
+    center_text="${step}${expect}"
 
 
     read_input_text="执行测试  "
