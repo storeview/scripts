@@ -1,3 +1,7 @@
+# do not catch ctrl+c, ctrl+z
+trap "" HUP INT OUIT TSTP
+
+
 # --------------------> 变量  <------------------------------------------------------------
 mqtt_server_ip=                                                                                 # MQTT 服务器地址
 device_uuid=                                                                                    # 设备 UUID
