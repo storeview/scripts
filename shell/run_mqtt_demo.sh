@@ -1,5 +1,7 @@
+
 # do not catch ctrl+c, ctrl+z
-trap "" HUP INT OUIT TSTP
+
+trap "KillProgram; PrePage " INT
 
 
 # --------------------> 变量  <------------------------------------------------------------
@@ -7,6 +9,7 @@ mqtt_server_ip=                                                                 
 device_uuid=                                                                                    # 设备 UUID
 user_uuid=$(who am i | awk '{print $1$5}')                              # 用户唯一标识，用于储存用户配置文件
 config_path='.mqtt_demo_run_config'                                             # 配置储存地址
+working_dir="$PWD"
 
 
 # --------------------> 用户界面  <------------------------------------------------------------
@@ -166,6 +169,7 @@ function ShowOneTestContent() {
         test_case_content_listArr=(${test_case_content_list})
         case_num=$(echo ${test_case_content_listArr[((input - 1))]} | awk -F'#' '{print $1}')
         case_content=$(echo ${test_case_content_listArr[((input - 1))]} | awk -F'#' '{print $2}')
+        cd "$working_dir"
         one=$(cat ${csv_data_file} | tail +3 | grep "${case_num},")
 
         # 对一行测试用例字符串进行解析
@@ -196,37 +200,35 @@ function Callback() {
         controller_name=$1
         input=$2
 
-		# 处理不用的用户输出
+                # 处理不用的用户输出
         case "${input}" in
         "q" | "Q")
                 exit 0
                 return
                 ;;
         "r" | "R")
-                cur_level=$((cur_level - 1))
-                ReloadViewUI "${nav_controller_name["${cur_level}"]}" "${nav_input["${cur_level}"]}"
-                # 回退完成以后 cur_level 需要自减
+                PrePage ${cur_level}
                 return
                 ;;
-		"")
-				case "${controller_name}" in
-					"ChangeMqttServerIP" | "ChangeDeviceUUID")
-						# 直接跳转，不经过后面设置数值的步骤
-						JumpViewUI "$controller_name" "${input}"
-						return
-						;;
-					"ShowAllTestCase" | "ShowAllTestContent")
-						ReloadViewUI "$controller_name" "${cur_test_case_content}"
-						return
-						;;
-					"ShowOneTestContent")
-						echo ""
-						;;
-					*)
-						echo ERR1-Callback
-						;;
-				esac
-		;;
+                "")
+                                case "${controller_name}" in
+                                        "ChangeMqttServerIP" | "ChangeDeviceUUID")
+                                                # 直接跳转，不经过后面设置数值的步骤
+                                                JumpViewUI "$controller_name" "${input}"
+                                                return
+                                                ;;
+                                        "ShowAllTestCase" | "ShowAllTestContent")
+                                                ReloadViewUI "$controller_name" "${cur_test_case_content}"
+                                                return
+                                                ;;
+                                        "ShowOneTestContent")
+                                                echo ""
+                                                ;;
+                                        *)
+                                                echo ERR1-Callback
+                                                ;;
+                                esac
+                ;;
         *)
                 echo ERR2-Callback
                 ;;
@@ -245,9 +247,19 @@ function Callback() {
                 ;;
         esac
 
-		# 跳转目录
+                # 跳转目录
         JumpViewUI "${controller_name}" "${input}"
 }
+
+
+# 去到上一个页面
+function PrePage() {
+                cur_level=$((cur_level - 1))
+                echo "--------------------------------------------------------------------"
+                echo "${nav_controller_name["${cur_level}"]} ${nav_input["${cur_level}"]}"
+                ReloadViewUI "${nav_controller_name[${cur_level}]}" "${nav_input[${cur_level}]}"
+}
+
 
 ## 跳转 UI 视图
 function JumpViewUI() {
@@ -299,6 +311,9 @@ function ReloadViewUI() {
                 ;;
         "ShowAllTestContent")
                 ShowAllTestContent "${input}"
+                ;;
+        "ShowOneTestContent")
+                ShowOneTestContent "${input}"
                 ;;
         *)
                 echo ERR-ReloadViewUI
@@ -406,6 +421,7 @@ function GetAllTestCaseContentByCaseNum() {
 # 执行测试
 # 无入参
 function ExecuteTest() {
+
         # 修改mqtt服务器和设备uuid的参数
         ChangeConfig "mqtt_ip" "${mqtt_server_ip}"
         ChangeConfig "device_uuid" "${device_uuid}"
@@ -497,3 +513,20 @@ function ChangeConfig() {
 if [ -n "${config_path}" ]; then mkdir "${config_path}"; fi
 # 入口程序
 ChangeMqttServerIP
+
+
+function KillProgram(){
+        program_pid=$(ps -ef | grep "demo_x64" | grep -v grep | awk '{print $2}');
+        kill  $program_pid;
+}
+
+
+PrePage
+
+#X=0
+#while :
+#do
+#  echo "X=$X"
+#  X=`expr ${X} + 1`
+#  sleep 1
+#done
