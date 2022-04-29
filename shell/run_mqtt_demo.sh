@@ -1,3 +1,4 @@
+set -u
 # do not catch ctrl+c, ctrl+z
 
 trap "KillProgram" INT
@@ -34,6 +35,12 @@ function ShowUI() {
         read_input_text=$5
         controller_name=$6
 
+        echo -e "\n\n"
+        echo -e "\n\n"
+        echo -e "\n\n"
+        echo -e "\n\n"
+        echo -e "\n\n"
+        echo -e "\n\n"
         #clear
         echo -e "\n\n"
         echo -e "\t\t\t\t\t\t\t当前用户 ${yellow_color}${user_uuid}${default_color}"
@@ -533,3 +540,4 @@ ChangeMqttServerIP
 #  X=`expr ${X} + 1`
 #  sleep 1
 #done
+
