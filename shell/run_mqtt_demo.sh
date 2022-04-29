@@ -1,7 +1,6 @@
-
 # do not catch ctrl+c, ctrl+z
 
-trap "KillProgram; PrePage " INT
+trap "KillProgram" INT
 
 
 # --------------------> 变量  <------------------------------------------------------------
@@ -35,7 +34,7 @@ function ShowUI() {
         read_input_text=$5
         controller_name=$6
 
-        clear
+        #clear
         echo -e "\n\n"
         echo -e "\t\t\t\t\t\t\t当前用户 ${yellow_color}${user_uuid}${default_color}"
         echo -e "-------------------------------------------------------------------------------------"
@@ -443,10 +442,12 @@ function ExecuteTest() {
         #开始运行程序
         cur_dir=${PWD}
         cd ${mqtt_demo_path}
+        echo -e "执行程序： demo_x64 ${cur_case_num}"
         ./demo_x64 ${cur_case_num}
         cd ${cur_dir}
 
-        echo -e "执行程序： demo_x64 ${cur_case_num}"
+        PrePage
+        echo "###########################"${cur_level}
 }
 
 # 修改 main.cpp 中的参数
@@ -508,6 +509,13 @@ function ChangeConfig() {
 }
 
 
+function KillProgram(){
+        program_pid=$(ps -ef | grep "demo_x64" | grep -v grep | awk '{print $2}');
+        kill  $program_pid;
+
+
+}
+
 # --------------------> 开始执行  <--------------------
 # 检查是否有配置文件路径
 if [ -n "${config_path}" ]; then mkdir "${config_path}"; fi
@@ -515,13 +523,8 @@ if [ -n "${config_path}" ]; then mkdir "${config_path}"; fi
 ChangeMqttServerIP
 
 
-function KillProgram(){
-        program_pid=$(ps -ef | grep "demo_x64" | grep -v grep | awk '{print $2}');
-        kill  $program_pid;
-}
 
 
-PrePage
 
 #X=0
 #while :
