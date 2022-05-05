@@ -37,15 +37,20 @@ def generate_new_xlsx_file(table, count):
         the_type = table.cell(i, 4).text
         description = table.cell(i, 5).text
 
+        real_name = name.replace('+', '')
+
 
 
         if "数组" in the_type:
-            parent_nodes[name.count('+')] = name.replace('+', '')
+            parent_nodes[name.count('+')] = real_name
             if the_type == "JSON数组":
                 the_type = "对象"
-                the_json['properties'][parent_nodes[0]] = { "type": schema_type_dic[the_type], "title": definition, "description":  description, "properties": {}}
+                the_json['properties'][parent_nodes[0]] = { "type": schema_type_dic[the_type], "title": definition, "description":  description}
+                the_json['properties'][parent_nodes[0]]['properties'] = {}
             elif the_type == "JSON字符串数组":
                 the_type = "数组"
+                #the_json['properties'][parent_nodes[0]] = { "type": schema_type_dic[the_type], "title": definition, "description":  description}
+                # the_json['properties'][parent_nodes[0]]['items'] = {"type": "string"}
             elif the_type == "JSON整型数组":
                 the_type = "数组"
         else:
@@ -56,7 +61,7 @@ def generate_new_xlsx_file(table, count):
             item =  { "type": schema_type_dic[the_type], "title": definition, "description":  description}
             # 统计 + 符号的个数，用于计算正在处于第几层。有 1 个说明位于下面一层，有 2 个说明位于下面 2 层
             levels = name.count('+')
-            _name = name.replace('+', '')
+            _name = real_name
             # 有多少层，就深入到多少层的 json 语句中去，进行赋值
             if levels == 1:
                 print(name)
@@ -65,7 +70,7 @@ def generate_new_xlsx_file(table, count):
 
 
         if required == "Y":
-            required_list.append(name.replace('+', ''))
+            required_list.append(real_name)
 
     the_json['required'] = required_list
     print(the_json)
