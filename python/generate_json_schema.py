@@ -55,17 +55,24 @@ def deal_with(i, table, the_json, level, parent_nodes):
 
     if the_type == "JSON对象":
         the_type = "对象"
+        # ！！！ 设置了父级节点
         parent_nodes[level] = real_name
         # print("--------> 2 <-------")
         cur_parent_node['properties'][real_name] = { "type": schema_type_dic[the_type], "title": definition, "description":  msg}
         cur_parent_node['properties'][real_name]['properties'] = {}
         cur_parent_node['properties'][real_name]['required'] = []
+    
     elif the_type == "JSON数组":
         # 这里其实是一个 json 对象数组
-        # the_type = "数组"
-        # parent_nodes[level] = real_name
-        # cur_parent_node['properties'][real_name] = { "type": schema_type_dic[the_type], "title": definition, "description":  msg}
-        # cur_parent_node['properties'][real_name]['items'] = {"type": "object"}
+        the_type = "数组"
+        # ！！！ 设置了父级节点
+        parent_nodes[level] = real_name
+        cur_parent_node['properties'][real_name] = { "type": schema_type_dic[the_type], "title": definition, "description":  msg}
+        cur_parent_node['properties'][real_name]['items'] = {"type": "object"}
+        cur_parent_node['properties'][real_name]['items']['properties'] = {}
+        cur_parent_node['properties'][real_name]['items']['required'] = []
+
+    
     elif the_type == "JSON字符串数组":
         the_type = "数组"
         cur_parent_node['properties'][real_name] = { "type": schema_type_dic[the_type], "title": definition, "description":  msg}
