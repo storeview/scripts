@@ -54,40 +54,28 @@ def parse_lines(i, table, level, parent_node, father_is_object_array):
 
 
     if the_type == "JSON对象":
-        # ！！！ 设置了父级节点
-        # print("--------> 2 <-------")
         cur_parent_node['properties'][real_name]['properties'] = {}
         cur_parent_node['properties'][real_name]['required'] = []
         i = parse_lines(i+1, table, level+1, cur_parent_node['properties'][real_name], 0)
     elif the_type == "JSON数组":
         # 这里其实是一个 json 对象数组
-        # ！！！ 设置了父级节点
-        # cur_parent_node['properties'][real_name]['properties'] = {}
-        # cur_parent_node['properties'][real_name]['required'] = []
         cur_parent_node['properties'][real_name]['items'] = {"type": "object"}
         cur_parent_node['properties'][real_name]['items']['properties'] = {}
         cur_parent_node['properties'][real_name]['items']['required'] = []
         i = parse_lines(i+1, table, level+1, cur_parent_node['properties'][real_name]['items'], 1)
     elif the_type == "JSON字符串数组":
-        # OK
         cur_parent_node['properties'][real_name]['items'] = {"type": "string"}
     elif the_type == "JSON整型数组":
-        # OK
         cur_parent_node['properties'][real_name]['items'] = {"type": "number"}
 
     if required == "Y":
         required_list = cur_parent_node['required']
         required_list.append(real_name)
         cur_parent_node['required'] = required_list
-        # print("##################################")
-        # print(cur_parent_node['required'])
 
     # 递归。进行下一行的解析
     i = parse_lines(i+1, table, level, parent_node, father_is_object_array)
     return i
-
-
-
 
 
 def parse_one_table(table, num):
@@ -100,12 +88,6 @@ def parse_one_table(table, num):
     the_json['type'] = 'object'
     the_json['properties'] = {}
     the_json['required'] = []
-
-    # 解析表格中的每一行
-    # for i in range(1, len(table.rows)):
-    #     name = table.cell(i, 0).text
-    #     if name != "":
-    #         level = name.count('+')
 
     # 开启递归，解析表格
     parse_lines(1, table, 0, the_json, 0)
