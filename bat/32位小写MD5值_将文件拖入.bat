@@ -9,7 +9,6 @@ echo %1
 echo;
 echo 32 位 MD5 值：
 for /f "usebackq" %%s in (`certutil -hashfile %1 MD5 ^| findstr "^[0-9a-z]*$"`) do (set value=%%s)
-rem set value2=%value:~0,32%
 echo %value%
 echo ---
 echo;
