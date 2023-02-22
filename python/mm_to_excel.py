@@ -84,67 +84,6 @@ introduction_str = ""
 def addNewNode():
                     print("--------------------> 正在输出一行表格 <--------------------")
                     sheet.append([i, test_main_model_str.strip(), test_model_str.strip(), test_content_str.strip(), pre_condition_str.strip(), "\n"+test_step_str.strip()+"\n", expect_result_str.strip(), test_result_str.strip(), test_remark_str.strip(), introduction_str.strip()])
-# 循环解析mm思维导图文件
-'''
-i = 1
-for test_main_module in top_node:
-    if test_main_module.tag != "node":
-        continue
-    test_main_model_str = test_main_module.get("TEXT")
-    if len(test_main_module) == 0:
-        addNewNode()
-    print("--------------------> 测试主模块:\n " + test_main_model_str)
-    for test_module in test_main_module:
-        test_model_str = test_module.get("TEXT")
-        if len(test_module) == 0:
-            addNewNode()
-        print("--------------------> 测试模块:\n " + test_model_str)
-        for test_content in test_module:
-            test_content_str = test_content.get("TEXT")
-            if len(test_content) == 0:
-                addNewNode()
-            print("--------------------> 测试内容:\n " + test_content_str)
-            for test_step in test_content:
-                test_step_str = test_step.get("TEXT")
-                if test_step_str[0:2] == "tp":
-                    pre_condition_str = test_step_str[3:]
-                    print("--------------------> 前置条件:\n " + pre_condition_str)
-                elif len(test_step) == 0:
-                    print("--------------------> 测试步骤:\n " + test_step_str)
-                    addNewNode()
-                    pre_condition_str = ""
-                for expect_result in test_step:
-                    expect_result_str = expect_result.get("TEXT")
-                    if len(expect_result) == 0:
-                        addNewNode()
-                        print("--------------------> 预期结果:\n " + expect_result_str)
-                    else:
-                        for test_result in expect_result:
-                            test_result_str_tmp = test_result.get("TEXT")
-                            if test_result_str_tmp[0:2] == "tr":
-                                test_remark_str = test_result_str_tmp[3:]
-                                print("--------------------> 备注:\n " + test_remark_str)
-                            elif test_result_str_tmp[0:2] == "te":
-                                introduction_str = test_result_str_tmp[3:]
-                                print("--------------------> 异常情况:\n " + introduction_str)
-                            else:
-                                test_result_str = test_result_str_tmp
-                        addNewNode()
-                        test_result_str = ""
-                        introduction_str = ""
-                        test_remark_str = ""
-                        i+=1
-                expect_result_str = ""
-                test_remark_str = ""
-                introduction_str = ""
-            test_step_str = ""
-            pre_condition_str = ""
-        test_content_str = ""
-    test_model_str = ""
-test_main_model_str = ""
-'''
-
-
 
 
 def deal_mm_file(node, level):
