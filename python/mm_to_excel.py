@@ -17,6 +17,10 @@ from openpyxl.styles import Alignment,Border, Side, Font, PatternFill
 
 2023-2-01 
     将for循环转换为递归
+
+2023-2-23
+v1.0.5.0
+    添加测试用例优先级字段.
 """
 
 # 使用文件作为解析对象
@@ -67,24 +71,10 @@ sheet.column_dimensions['I'].width=25
 sheet.column_dimensions['J'].width=25
 
 
-sheet.append(["编号", "测试主模块", "测试模块", "测试内容", "前置条件", "测试步骤", "预期结果", "测试结果", "备注", "异常情况说明"])
+sheet.append(["编号", "测试主模块", "测试模块", "测试内容", "前置条件", "测试步骤", "预期结果", "测试结果", "备注", "异常情况说明", "优先级"])
 
 
 # 解析mm文件, 并生成表格(代码可以进一步优化)
-test_main_model_str = ""
-test_model_str = ""
-test_content_str = ""
-pre_condition_str = ""
-test_step_str = ""
-expect_result_str = ""
-test_result_str = ""
-test_remark_str = ""
-introduction_str = ""
-# 添加一行内容
-def addNewNode():
-                    print("--------------------> 正在输出一行表格 <--------------------")
-                    sheet.append([i, test_main_model_str.strip(), test_model_str.strip(), test_content_str.strip(), pre_condition_str.strip(), "\n"+test_step_str.strip()+"\n", expect_result_str.strip(), test_result_str.strip(), test_remark_str.strip(), introduction_str.strip()])
-
 
 def deal_mm_file(node, level):
     if level == 4:
@@ -92,20 +82,24 @@ def deal_mm_file(node, level):
     text = node.get("TEXT")
 
     if text[0:2] == "tp":
-        one_row[4] = text[3:]
         print("--------------------> 前置条件:\n " + text)
+        one_row[4] = text[3:]
         return
     elif text[0:2] == "tr":
-        one_row[8] = text[3:]
         print("--------------------> 备注:\n " + text)
+        one_row[8] = text[3:]
         return
     elif text[0:2] == "te":
-        one_row[9] = text[3:]
         print("--------------------> 异常情况说明:\n " + text)
+        one_row[9] = text[3:]
         return
+    elif len(text) == 2 and text[0:1] == "P":
+        print("--------------------> 优先级:\n " + text)
+        one_row[10] = text
+        return 
     else:
-        one_row[level] = text
         print("--------------------> level "+str(level)+" :\n " + text)
+        one_row[level] = text
 
     # 递归下一层级
     for sub_node in node:
@@ -117,6 +111,7 @@ def deal_mm_file(node, level):
         one_row[7] = ''
         one_row[8] = ''
         one_row[9] = ''
+        one_row[10] = ''
 
     # 清空本次递归填写的数据
     if level != 7:
@@ -124,7 +119,7 @@ def deal_mm_file(node, level):
 
 def addNewNode2():
     print("--------------------> 正在输出一行表格 <--------------------")
-    sheet.append([one_row[0].strip(), one_row[1].strip(), one_row[2].strip(), one_row[3].strip(), one_row[4].strip(), "\n"+one_row[5].strip()+"\n", one_row[6].strip(), one_row[7].strip(), one_row[8].strip(), one_row[9].strip()])
+    sheet.append([one_row[0].strip(), one_row[1].strip(), one_row[2].strip(), one_row[3].strip(), one_row[4].strip(), "\n"+one_row[5].strip()+"\n", one_row[6].strip(), one_row[7].strip(), one_row[8].strip(), one_row[9].strip(), one_row[10].strip()])
                     
 
 
@@ -133,14 +128,14 @@ def addNewNode2():
 # 递归中包含这样的逻辑: 
 #   当此节点的子节点长度为0时,代表此节点是最后一个了, 此时结束循环.
 
-one_row = ['', '', '', '', '', '', '', '', '', '']
+one_row = ['', '', '', '', '', '', '', '', '', '', '']
 # 测试主模块
 for test_main_module in top_node:
     if test_main_module.tag != "node":
         continue
     deal_mm_file(test_main_module, 1)
     # 清空
-    one_row = ['', '', '', '', '', '', '', '', '', '']
+    one_row = ['', '', '', '', '', '', '', '', '', '', '']
 
 
 
@@ -148,9 +143,9 @@ for test_main_module in top_node:
 thin = Side(border_style="thin", color="000000")
 
 i = 1
-# 对所有单元格进行处理(横排竖排对齐)
+# 对所有单元格进行处理(横排竖排对齐, 以及边框)
 while sheet.cell(i, 1).value != None:
-    for j in range(1, 11):
+    for j in range(1, 12):
         if i== 1:
             # 上下左右居中对齐，自动换行
             sheet.cell(i, j).alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
