@@ -1,3 +1,16 @@
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+
+; 当前功能
+; 1 将键盘上的大写键盘，同时映射成『Esc』键和『Ctrl』键
+; 2 Shift + Alt + i 快捷键，进行 shift + Insert 的插入效果，Ctrl + Alt + i 快捷键，运行 ctrl + Insert 的插入效果
+; 3 Alt + 鼠标滚轮切换桌面
+; 4 Alt + q 桌面元素隐藏与显示开关
+
+
 ; 将键盘上的大写键盘，同时映射成『Esc』键和『Ctrl』键
 SetCapsLockState, alwaysoff
 Capslock::
@@ -9,6 +22,9 @@ if ( A_PriorKey = "CapsLock" )
     Send {Esc}
 }
 return 
+
+Up:: Send, /  
+
 
 
 ; 使用 Shift + Insert 按键，可以快速粘贴（Xshell和Powershell中）。但是，这样的按键过于麻烦了（Insert键位太远了）
